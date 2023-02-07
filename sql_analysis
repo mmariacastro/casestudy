@@ -1,0 +1,348 @@
+#Checking whether length of Id column in each file is correct.
+SELECT LENGTH(CAST(Id AS STRING)) 
+FROM `bellabeat-case-study-mcastro.daily_activity.activity`;
+
+SELECT Id
+FROM `bellabeat-case-study-mcastro.daily_activity.activity`
+WHERE LENGTH(CAST(Id AS STRING)) > 10;
+SELECT Id
+FROM `bellabeat-case-study-mcastro.daily_activity.activity`
+WHERE LENGTH(CAST(Id AS STRING)) < 10;
+
+SELECT Id
+FROM `bellabeat-case-study-mcastro.daily_activity.calories`
+WHERE LENGTH(CAST(Id AS STRING)) > 10;
+SELECT Id
+FROM `bellabeat-case-study-mcastro.daily_activity.calories`
+WHERE LENGTH(CAST(Id AS STRING)) < 10;
+
+SELECT Id
+FROM `bellabeat-case-study-mcastro.daily_activity.intensities`
+WHERE LENGTH(CAST(Id AS STRING)) > 10;
+SELECT Id
+FROM `bellabeat-case-study-mcastro.daily_activity.intensities`
+WHERE LENGTH(CAST(Id AS STRING)) < 10;
+
+SELECT Id
+FROM `bellabeat-case-study-mcastro.daily_activity.sleep`
+WHERE LENGTH(CAST(Id AS STRING)) > 10;
+SELECT Id
+FROM `bellabeat-case-study-mcastro.daily_activity.sleep`
+WHERE LENGTH(CAST(Id AS STRING)) < 10;
+
+SELECT Id
+FROM `bellabeat-case-study-mcastro.daily_activity.steps`
+WHERE LENGTH(CAST(Id AS STRING)) > 10;
+SELECT Id
+FROM `bellabeat-case-study-mcastro.daily_activity.steps`
+WHERE LENGTH(CAST(Id AS STRING)) < 10;
+
+SELECT Id
+FROM `bellabeat-case-study-mcastro.daily_activity.weightLog`
+WHERE LENGTH(CAST(Id AS STRING)) > 10;
+SELECT Id
+FROM `bellabeat-case-study-mcastro.daily_activity.weightLog`
+WHERE LENGTH(CAST(Id AS STRING)) < 10
+;
+#Selecting distinct Id's to find the number of unique users in each table.
+SELECT COUNT(DISTINCT Id)
+FROM `bellabeat-case-study-mcastro.daily_activity.activity`;
+SELECT COUNT(DISTINCT Id)
+FROM `bellabeat-case-study-mcastro.daily_activity.calories`;
+SELECT COUNT(DISTINCT Id)
+FROM `bellabeat-case-study-mcastro.daily_activity.intensities`;
+SELECT COUNT(DISTINCT Id)
+FROM `bellabeat-case-study-mcastro.daily_activity.sleep`;
+SELECT COUNT(DISTINCT Id)
+FROM `bellabeat-case-study-mcastro.daily_activity.steps`;
+SELECT COUNT(DISTINCT Id)
+FROM `bellabeat-case-study-mcastro.daily_activity.weightLog`
+#33 participants in activity, intensities, calories and steps. 24 participants tracked sleep, and 8 tracked weight.
+;
+#Finding duplicates in each table. First, the activity table.
+SELECT ID, ActivityDate, COUNT(*) AS numRow
+FROM `bellabeat-case-study-mcastro.daily_activity.activity`
+GROUP BY ID, ActivityDate # Each row is uniquely identified by the ID and ActivityDate colummns
+HAVING numRow > 1
+#No duplicates were found.
+;
+#Finding duplicates in calories.
+SELECT ID, ActivityDay, COUNT(*) AS numRow
+FROM `bellabeat-case-study-mcastro.daily_activity.calories`
+GROUP BY ID, ActivityDay # Each row is uniquely identified by the ID and ActivityDay colummns
+HAVING numRow > 1
+#No duplicates were found.
+;
+#Finding duplicates in intensities.
+SELECT ID, ActivityDay, COUNT(*) AS numRow
+FROM `bellabeat-case-study-mcastro.daily_activity.intensities`
+GROUP BY ID, ActivityDay # Each row is uniquely identified by the ID and ActivityDay colummns
+HAVING numRow > 1
+#No duplicates were found.
+;
+#Finding duplicates in steps.
+SELECT ID, ActivityDay, COUNT(*) AS numRow
+FROM `bellabeat-case-study-mcastro.daily_activity.steps`
+GROUP BY ID, ActivityDay # Each row is uniquely identified by the ID and ActivityDay colummns
+HAVING numRow > 1
+#No duplicates were found.
+;
+#Finding duplicates in sleep.
+SELECT *, COUNT(*) AS numRow
+FROM `bellabeat-case-study-mcastro.daily_activity.sleep`
+GROUP BY Id, SleepDay, TotalSleepRecords, TotalTimeInBed, TotalMinutesAsleep 
+HAVING numRow > 1
+#3 duplicate results were found.
+;
+#Finding duplicates in weightLog.
+SELECT *, COUNT(*) AS numRow
+FROM `bellabeat-case-study-mcastro.daily_activity.weightLog`
+GROUP BY Id, Date, Time, WeightKg, WeightPounds, Fat, BMI,IsManualReport, LogId 
+HAVING numRow > 1
+#No duplicates were found.
+;
+#Removing duplicates in sleep table by creating a new table with only unique values.
+CREATE TABLE `bellabeat-case-study-mcastro.daily_activity.sleep2` AS
+SELECT DISTINCT * 
+FROM `bellabeat-case-study-mcastro.daily_activity.sleep`
+;
+#Double checking new table no longer has duplicate rows
+SELECT *, COUNT(*) AS numRow
+FROM `bellabeat-case-study-mcastro.daily_activity.sleep2`
+GROUP BY Id, SleepDay, TotalSleepRecords, TotalTimeInBed, TotalMinutesAsleep
+HAVING numRow > 1
+#No duplicates were found.
+;
+#Checking whether activity and calories table information match.
+SELECT 
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.Id) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.calories`.Id)) AS match,
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.ActivityDate) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.calories`.ActivityDay)) AS match_activity_date,
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.Calories) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.calories`.Calories)) AS match_calories
+FROM `bellabeat-case-study-mcastro.daily_activity.activity`
+JOIN `bellabeat-case-study-mcastro.daily_activity.calories`
+ON `bellabeat-case-study-mcastro.daily_activity.activity`.Id = `bellabeat-case-study-mcastro.daily_activity.calories`.Id
+  AND `bellabeat-case-study-mcastro.daily_activity.activity`.ActivityDate = `bellabeat-case-study-mcastro.daily_activity.calories`.ActivityDay
+  AND `bellabeat-case-study-mcastro.daily_activity.activity`.Calories = `bellabeat-case-study-mcastro.daily_activity.calories`.Calories
+#It has returned as TRUE. So the information is the same on both tables.
+;
+#Checking whether there's a match in activity and intensities table.
+SELECT 
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.Id) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.intensities`.Id)) AS match,
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.ActivityDate) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.intensities`.ActivityDay)) AS match_activity_day,
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.SedentaryMinutes) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.intensities`.SedentaryMinutes)) AS match_sedentary_minutes,
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.LightlyActiveMinutes) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.intensities`.LightlyActiveMinutes)) AS match_lightly_active_minutes,
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.FairlyActiveMinutes) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.intensities`.FairlyActiveMinutes)) AS match_fairly_active_minutes,
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.VeryActiveMinutes) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.intensities`.VeryActiveMinutes)) AS match_very_active_minutes,
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.SedentaryActiveDistance) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.intensities`.SedentaryActiveDistance)) AS match_sedentary_distance,
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.LightActiveDistance) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.intensities`.LightActiveDistance)) AS match_light_distance,
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.ModeratelyActiveDistance) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.intensities`.ModeratelyActiveDistance)) AS match_moderate_distance,
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.VeryActiveDistance) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.intensities`.VeryActiveDistance)) AS match_very_active_distance,
+FROM `bellabeat-case-study-mcastro.daily_activity.activity`
+JOIN `bellabeat-case-study-mcastro.daily_activity.intensities`
+ON `bellabeat-case-study-mcastro.daily_activity.activity`.Id = `bellabeat-case-study-mcastro.daily_activity.intensities`.Id
+  AND `bellabeat-case-study-mcastro.daily_activity.activity`.ActivityDate = `bellabeat-case-study-mcastro.daily_activity.intensities`.ActivityDay
+  AND `bellabeat-case-study-mcastro.daily_activity.activity`.SedentaryMinutes = `bellabeat-case-study-mcastro.daily_activity.intensities`.SedentaryMinutes
+  AND `bellabeat-case-study-mcastro.daily_activity.activity`.LightlyActiveMinutes = `bellabeat-case-study-mcastro.daily_activity.intensities`.LightlyActiveMinutes
+  AND `bellabeat-case-study-mcastro.daily_activity.activity`.FairlyActiveMinutes = `bellabeat-case-study-mcastro.daily_activity.intensities`.FairlyActiveMinutes
+  AND `bellabeat-case-study-mcastro.daily_activity.activity`.VeryActiveMinutes = `bellabeat-case-study-mcastro.daily_activity.intensities`.VeryActiveMinutes
+  AND `bellabeat-case-study-mcastro.daily_activity.activity`.SedentaryActiveDistance = `bellabeat-case-study-mcastro.daily_activity.intensities`.SedentaryActiveDistance
+  AND `bellabeat-case-study-mcastro.daily_activity.activity`.LightActiveDistance = `bellabeat-case-study-mcastro.daily_activity.intensities`.LightActiveDistance
+  AND `bellabeat-case-study-mcastro.daily_activity.activity`.ModeratelyActiveDistance = `bellabeat-case-study-mcastro.daily_activity.intensities`.ModeratelyActiveDistance
+  AND `bellabeat-case-study-mcastro.daily_activity.activity`.VeryActiveDistance = `bellabeat-case-study-mcastro.daily_activity.intensities`.VeryActiveDistance
+#It has returned as TRUE. 
+;
+#Checking whether the data in the activity and steps table are the same.
+SELECT 
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.Id) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.steps`.Id)) AS match,
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.ActivityDate) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.steps`.ActivityDay)) AS match_activity_date,
+  (COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.TotalSteps) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.steps`.StepTotal)) AS match_total_steps,
+FROM `bellabeat-case-study-mcastro.daily_activity.activity`
+JOIN `bellabeat-case-study-mcastro.daily_activity.steps`
+ON `bellabeat-case-study-mcastro.daily_activity.activity`.Id = `bellabeat-case-study-mcastro.daily_activity.steps`.Id
+  AND `bellabeat-case-study-mcastro.daily_activity.activity`.ActivityDate = `bellabeat-case-study-mcastro.daily_activity.steps`.ActivityDay
+  AND `bellabeat-case-study-mcastro.daily_activity.activity`.TotalSteps = `bellabeat-case-study-mcastro.daily_activity.steps`.StepTotal
+#It has returned as TRUE. 
+;
+#Now we don't need to use the tables: calories, steps or intensities. All data is in the activity table.
+
+#Let's also check if the Id's are the same in activity and sleep.
+SELECT COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.Id) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.sleep2`.Id) AS match
+FROM `bellabeat-case-study-mcastro.daily_activity.activity`
+INNER JOIN `bellabeat-case-study-mcastro.daily_activity.sleep2`
+ON `bellabeat-case-study-mcastro.daily_activity.activity`.Id = `bellabeat-case-study-mcastro.daily_activity.sleep2`.Id
+#It has returned as TRUE. Although sleep only has 24 Id's, these 24 Id's match the same 24 Id's in the activity table.
+;
+#Let's also check if the Id's are the same in activity and weightLog.
+SELECT COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.activity`.Id) = COUNT(DISTINCT `bellabeat-case-study-mcastro.daily_activity.weightLog`.Id) AS match
+FROM `bellabeat-case-study-mcastro.daily_activity.activity`
+INNER JOIN `bellabeat-case-study-mcastro.daily_activity.weightLog`
+ON `bellabeat-case-study-mcastro.daily_activity.activity`.Id = `bellabeat-case-study-mcastro.daily_activity.weightLog`.Id
+#It has returned as TRUE. Although weightLog only has 8 Id's, these 8 Id's match the same 8 Id's in the activity table.
+;
+#This means that both sleep and weightLog have data from the same users as the activity table, or at least from the ones who tracked these two things.
+
+#Next, let's look at records with 0 in the TotalSteps column of the activity table.
+SELECT Id, COUNT(*) AS numZeroStepsDays
+FROM `bellabeat-case-study-mcastro.daily_activity.activity`
+WHERE TotalSteps = 0
+GROUP BY Id
+ORDER BY numZeroStepsDays DESC
+#15 users have records with zero-step days.
+;
+#How many zero-step records are there in total?
+SELECT SUM(numZeroStepsDays) AS totalDaysZeroSteps
+FROM (
+	SELECT COUNT(*) AS numZeroStepsDays
+	FROM `bellabeat-case-study-mcastro.daily_activity.activity`
+	WHERE TotalSteps = 0
+	) AS z
+#There are 77 records with zero steps a day.
+;
+#Let's take a closer look at the zero-step days.
+SELECT ROUND((SedentaryMinutes/60),2) AS sedentary_hours,
+FROM `bellabeat-case-study-mcastro.daily_activity.activity`
+WHERE TotalSteps = 0
+#Most of the results show that these zero-step records happen during 24 hour periods, so most likely the users were not using the wristbands. These records could potentially be misleading. These records will not be taken into account in further calculations.
+;
+
+#Analyze Phase.
+
+#Checking how many users logged activities, sleep or weight.
+SELECT COUNT(DISTINCT Id ) AS logged_activity
+FROM `bellabeat-case-study-mcastro.daily_activity.activity`
+WHERE LoggedActivitiesDistance > 0;
+
+SELECT COUNT(DISTINCT Id ) AS logged_sleep
+FROM `bellabeat-case-study-mcastro.daily_activity.sleep2`;
+
+SELECT COUNT(DISTINCT Id )
+FROM `bellabeat-case-study-mcastro.daily_activity.weightLog`
+#4 tracked activities, 24 tracked sleep and 8 tracked weight.
+;
+#Counting how many records exist in each day of the week to understand usage.
+SELECT 
+  EXTRACT(DAYOFWEEK FROM `ActivityDate`) AS day_of_week,
+  count(*) as record_count
+FROM 
+  `bellabeat-case-study-mcastro.daily_activity.activity`
+WHERE
+  `ActivityDate` IS NOT NULL
+GROUP BY 
+  day_of_week
+ORDER BY 
+  day_of_week ASC
+#The results show a number from 1 to 7, which corresponds to Sunday through Saturday, and how many records exist in each day.
+;
+
+#Now, let's check how the sleep records are distributed throughout the week, and the average hours of sleep in each day of the week.
+SELECT 
+  EXTRACT(DAYOFWEEK FROM `SleepDay`) AS day_of_week,
+  AVG(ROUND(`TotalMinutesAsleep`/60,2)) as total_hours_asleep,
+  count(*) as record_count
+FROM 
+  `bellabeat-case-study-mcastro.daily_activity.sleep2`
+WHERE
+  `SleepDay` IS NOT NULL
+GROUP BY 
+  day_of_week
+ORDER BY 
+  day_of_week ASC
+;
+#Checking how many minutes it took for participants to fall asleep on average on each day of the week.
+SELECT 
+  EXTRACT(DAYOFWEEK FROM `SleepDay`) AS day_of_week,
+  AVG(`TotalTimeInBed`- `TotalMinutesAsleep`) as minutes_to_fall_asleep,
+  count(*) as record_count
+FROM 
+  `bellabeat-case-study-mcastro.daily_activity.sleep2`
+WHERE
+  `SleepDay` IS NOT NULL
+GROUP BY 
+  day_of_week
+ORDER BY 
+  day_of_week ASC
+;
+#Checking the average calories burned on each day of the week.
+SELECT 
+  EXTRACT(DAYOFWEEK FROM `ActivityDay`) AS day_of_week,
+  AVG(`Calories`) as avg_daily_calories,
+  count(*) as record_count
+FROM 
+  `bellabeat-case-study-mcastro.daily_activity.calories`
+WHERE
+  `ActivityDay` IS NOT NULL
+GROUP BY 
+  day_of_week
+ORDER BY 
+  day_of_week ASC
+;
+#Let's check how many steps users take per day on average on each day of the week.
+SELECT 
+  EXTRACT(DAYOFWEEK FROM `ActivityDate`) AS day_of_week,
+  AVG(`TotalSteps`) as avg_total_steps,
+FROM 
+  `bellabeat-case-study-mcastro.daily_activity.activity`
+WHERE
+  `ActivityDate` IS NOT NULL
+  AND
+  `TotalSteps` > 0
+GROUP BY 
+  day_of_week
+ORDER BY 
+  day_of_week ASC
+;
+#Checking the average distance next.
+SELECT 
+  EXTRACT(DAYOFWEEK FROM `ActivityDate`) AS day_of_week,
+  AVG(`TotalDistance`) as avg_total_distance,
+FROM 
+  `bellabeat-case-study-mcastro.daily_activity.activity`
+WHERE
+  `ActivityDate` IS NOT NULL
+GROUP BY 
+  day_of_week
+ORDER BY 
+  day_of_week ASC
+#Assuming this is in km.
+;
+#Let's check how users move throughout the day in percentages.
+SELECT
+  AVG(SedentaryMinutes) / (AVG(SedentaryMinutes) + AVG(LightlyActiveMinutes) + AVG(VeryActiveMinutes) + AVG(FairlyActiveMinutes)) * 100 AS SedentaryMinutesPercentage,
+  AVG(LightlyActiveMinutes) / (AVG(SedentaryMinutes) + AVG(LightlyActiveMinutes) + AVG(VeryActiveMinutes) + AVG(FairlyActiveMinutes)) * 100 AS LightlyActiveMinutesPercentage,
+  AVG(VeryActiveMinutes) / (AVG(SedentaryMinutes) + AVG(LightlyActiveMinutes) + AVG(VeryActiveMinutes) + AVG(FairlyActiveMinutes)) * 100 AS VeryActiveMinutesPercentage,
+  AVG(FairlyActiveMinutes) / (AVG(SedentaryMinutes) + AVG(LightlyActiveMinutes) + AVG(VeryActiveMinutes) + AVG(FairlyActiveMinutes)) * 100 AS FairlyActiveMinutesPercentage
+FROM
+  `bellabeat-case-study-mcastro.daily_activity.activity`
+;
+#Now let's check this on each day of the week to see if there is any day that stands out.
+WITH activity_summary AS (
+  SELECT 
+    Id,
+    EXTRACT(DAYOFWEEK FROM `ActivityDate`) AS day_of_week,
+    SUM(`SedentaryMinutes`) as sedentary_minutes,
+    SUM(`LightlyActiveMinutes`) as lightly_minutes,
+    SUM(`FairlyActiveMinutes`) as fairly_active_minutes,
+    SUM(`VeryActiveMinutes`) as very_active_minutes,
+    SUM(`SedentaryMinutes` + `LightlyActiveMinutes` + `VeryActiveMinutes` + `FairlyActiveMinutes`) as total_minutes
+  FROM
+    `bellabeat-case-study-mcastro.daily_activity.activity` as activity
+  WHERE
+    `ActivityDate` IS NOT NULL
+  GROUP BY
+    day_of_week, Id
+)
+SELECT
+  day_of_week,
+  AVG(ROUND(sedentary_minutes / total_minutes, 2)) * 100 AS avg_sedentary,
+  AVG(ROUND(lightly_minutes / total_minutes, 2)) * 100 AS avg_lightly_active,
+  AVG(ROUND(fairly_active_minutes / total_minutes, 2)) * 100 AS avg_fairly_active,
+  AVG(ROUND(very_active_minutes / total_minutes, 2)) * 100 AS avg_very_active
+FROM
+  activity_summary
+GROUP BY
+  day_of_week
+ORDER BY
+  day_of_week ASC
+;
+
+
